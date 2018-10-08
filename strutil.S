@@ -2,6 +2,7 @@
 .global cmpstr
 .global bzeromem
 .global dellc
+.global split_ws
 
 .text
 
@@ -83,4 +84,29 @@ dellc:
 
     xorb %al, %al
     movb %al, (%rdi)
+    ret
+
+# function:
+#	char* __rax__ split_ws(const char* __rdi__ begin, size_t __rsi__ bsz);
+# returns: beginning of the space-separated string, 0 if none
+# begin: beginning of the buffer
+# bsz: buffer size
+split_ws:
+    xchgq %rsi, %rcx
+
+__split_ws_l0:
+    movb (%rdi), %al
+    cmpb $32, %al
+    je __split_finish
+    addq $1, %rdi
+    subq $1, %rcx
+    testq %rcx, %rcx
+    jnz __split_ws_l0
+    
+    xorq %rax, %rax
+    ret
+
+__split_finish:
+    movq %rdi, %rax
+    addq $1, %rax
     ret

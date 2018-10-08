@@ -2,7 +2,6 @@
 
 .data
 sz_sysh_banner: .string "sysh version 0.0.0\n"
-sz_sysh_builtin_exit: .string "exit\n"
 
 .extern handle_input
 .extern bzeromem
@@ -34,13 +33,6 @@ __main_l0:
     call bzeromem
 
     sys_read_stdin %rbp, $2048
-
-    movq %rbp, %rdi
-    movq $sz_sysh_builtin_exit, %rsi
-    call cmpstr
-
-    testl %eax, %eax
-    jz __main_finish
 
     movq %rbp, %rdi
     call dellc

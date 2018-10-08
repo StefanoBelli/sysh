@@ -1,14 +1,38 @@
 .extern builtin_cd
 .extern builtin_cwd
+.extern builtin_exit
 .extern sayexec
 .extern cmpstr
 .extern lenstr
+.extern split_ws
 
 .global handle_input
 .text
 handle_input:
     movq $__builtins, %r9
-    movq %rdi, %r10
+    movq %rdi, %r8
+
+    movq $2048, %rsi
+    call split_ws
+
+    testq %rax, %rax
+    jnz __handle_input_putzero
+    
+    xorq %r11, %r11 #arguments
+    
+__handle_input_setcommand:
+    movq %r8, %r10 #command
+    jmp __handle_input_l0
+
+
+__handle_input_putzero:
+    subq $1, %rax
+    xorb %bl, %bl
+    movb %bl, (%rax)
+    addq $1, %rax
+    movq %rax, %r11 #arguments
+    jmp __handle_input_setcommand
+
 __handle_input_l0:
     movq (%r9), %r8
     testq %r8, %r8
@@ -46,6 +70,9 @@ __builtins:
 
     .asciz "cwd"
     .quad builtin_cwd
+
+    .asciz "exit"
+    .quad builtin_exit
 
     .quad 0
     .quad sayexec

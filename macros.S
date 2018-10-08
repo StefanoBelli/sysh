@@ -19,6 +19,10 @@
     syscall
 .endm
 
+.macro sys_write_stderr buf, len
+    sys_write $2, \buf, \len
+.endm
+
 .macro sys_write_stdout buf, len
     sys_write $1, \buf, \len
 .endm
@@ -40,4 +44,8 @@
     syscall
 .endm
 
-.set MAX_DIR_LEN, 4096
+.macro sys_exit code
+    movq $60, %rax
+    movq \code, %rdi
+    syscall
+.endm
