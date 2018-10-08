@@ -1,3 +1,6 @@
+.extern builtin_cd
+.extern builtin_cwd
+.extern sayexec
 .extern cmpstr
 .extern lenstr
 
@@ -46,12 +49,3 @@ __builtins:
 
     .quad 0
     .quad sayexec
-
-builtin_cd:
-    ret
-    
-builtin_cwd:
-    ret
-
-sayexec:
-    ret

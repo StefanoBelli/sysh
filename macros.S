@@ -26,3 +26,18 @@
 .macro sys_read_stdin buf, len
     sys_read $0, \buf, \len
 .endm
+
+.macro sys_getcwd buf, len
+    movq $79, %rax
+    movq \buf, %rdi
+    movq \len, %rsi
+    syscall
+.endm
+
+.macro sys_chdir buf
+    movq $80, %rax
+    movq \buf, %rdi
+    syscall
+.endm
+
+.set MAX_DIR_LEN, 4096
