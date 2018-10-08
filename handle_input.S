@@ -33,6 +33,7 @@ __handle_input_putzero:
     movq %rax, %r11 #arguments
     jmp __handle_input_setcommand
 
+    movq %rdi, %r10
 __handle_input_l0:
     movq (%r9), %r8
     testq %r8, %r8

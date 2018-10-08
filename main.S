@@ -6,7 +6,7 @@ sz_sysh_banner: .string "sysh version 0.0.0\n"
 .extern handle_input
 .extern bzeromem
 .extern cmpstr
-.extern dellc
+.extern erase_newline
 
 .global main
 
@@ -35,8 +35,8 @@ __main_l0:
     sys_read_stdin %rbp, $2048
 
     movq %rbp, %rdi
-    call dellc
-     
+    call erase_newline
+
     movq %rbp, %rdi
     call handle_input
 

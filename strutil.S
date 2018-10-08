@@ -1,7 +1,7 @@
 .global lenstr
 .global cmpstr
 .global bzeromem
-.global dellc
+.global erase_newline
 .global split_ws
 
 .text
@@ -50,6 +50,7 @@ bzeromem:
     xorb %al, %al
 __bzeromem_l0:
     movb %al, (%rdi)
+    addq $1, %rdi
     subq $1, %rcx
     testq %rcx, %rcx
     jnz __bzeromem_l0
@@ -76,12 +77,18 @@ __lenstr_l0:
     ret
 
 # function:
-#	__nothing__ dellc(char* __rdi__ buf)
+#	__nothing__ erase_newline(char* __rdi__ buf)
 # returns nothing
 # buf: buffer
-dellc:
+erase_newline:
+    pushq %rdi
+
     call lenstr
 
+    popq %rdi
+    subq $1, %rax
+    addq %rax, %rdi
+    
     xorb %al, %al
     movb %al, (%rdi)
     ret
@@ -93,7 +100,6 @@ dellc:
 # bsz: buffer size
 split_ws:
     xchgq %rsi, %rcx
-
 __split_ws_l0:
     movb (%rdi), %al
     cmpb $32, %al
@@ -102,7 +108,7 @@ __split_ws_l0:
     subq $1, %rcx
     testq %rcx, %rcx
     jnz __split_ws_l0
-    
+
     xorq %rax, %rax
     ret
 
