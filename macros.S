@@ -49,3 +49,17 @@
     movq \code, %rdi
     syscall
 .endm
+
+.macro sys_wait4_pidonly pid
+    movq $61, %rax
+    movq \pid, %rdi
+    xorq %rsi, %rsi
+    xorq %rdx, %rdx
+    xorq %r10, %r10
+    syscall
+.endm
+
+.macro sys_fork
+    movq $57, %rax
+    syscall
+.endm
