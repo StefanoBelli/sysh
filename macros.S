@@ -63,3 +63,11 @@
     movq $57, %rax
     syscall
 .endm
+    
+.macro sys_execve filename, argv, envp
+    movq $59, %rax
+    movq \filename, %rdi
+    movq \argv, %rsi
+    movq \envp, %rdx
+    syscall
+.endm

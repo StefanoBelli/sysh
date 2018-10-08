@@ -4,6 +4,7 @@
 .text
 sayexec:
     sys_fork
+    xchgq %r8, %r10
     testl %eax, %eax
     jz __sayexec_childproc
     sys_wait4_pidonly %rax
@@ -11,4 +12,4 @@ sayexec:
     ret
 
 __sayexec_childproc:
-    sys_exit $0
+    sys_execve %r8, $0, $0
