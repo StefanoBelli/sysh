@@ -7,6 +7,7 @@ sz_sysh_banner: .string "sysh version 0.0.0\n"
 .extern bzeromem
 .extern cmpstr
 .extern erase_newline
+.extern erase_trailing_ws
 
 .global main
 
@@ -37,6 +38,9 @@ __main_l0:
     movq %rbp, %rdi
     call erase_newline
 
+    movq %rbp, %rdi
+    call erase_trailing_ws
+    
     movq %rbp, %rdi
     call handle_input
 

@@ -3,6 +3,8 @@
 .global bzeromem
 .global erase_newline
 .global split_ws
+.global erase_trailing_ws
+.global split_ws_reverse
 
 .text
 
@@ -115,4 +117,48 @@ __split_ws_l0:
 __split_finish:
     movq %rdi, %rax
     addq $1, %rax
+    ret
+
+# function:
+# 	__nothing__ erase_trailing_ws(char* __rdi__ buf)
+# returns nothing
+# buf: buffer which will result in whitespaces (trailing) subs with 0es
+erase_trailing_ws:
+    pushq %rdi
+
+    call lenstr
+
+    popq %rdi
+    subq $1, %rax
+    addq %rax, %rdi
+
+__erase_trailing_ws_l0: 
+    movb (%rdi), %al
+    cmpb $32, %al
+    jne __erase_trailing_ws_finish
+    xorb %al, %al
+    movb %al, (%rdi)
+    subq $1, %rdi
+    jmp __erase_trailing_ws_l0
+    
+__erase_trailing_ws_finish: 
+    ret
+
+# function:
+# 	char* __rax__ split_ws_reverse(const char* __rdi__ beg, const char* __rsi__ end)
+# returns: beginning of the ws-separated string
+# beg: beginning of the string
+# end: end of the string
+split_ws_reverse:
+__split_ws_reverse_l0:
+    movb (%rsi), %al
+    cmpb $32, %al
+    je __split_ws_finish
+    subq $1, %rsi
+    cmpq %rsi, %rdi
+    je __split_ws_finish
+    jmp __split_ws_reverse_l0
+    
+__split_ws_finish:
+    movq %rsi, %rax
     ret
