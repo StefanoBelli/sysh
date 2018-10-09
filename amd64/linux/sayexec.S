@@ -7,7 +7,8 @@ sayexec:
     xchgq %r8, %r10
     testl %eax, %eax
     jz __sayexec_childproc
-    sys_wait4_pidonly %rax
+    xchgq %rax, %rbx
+    sys_waitid %rbx
     
     ret
 
