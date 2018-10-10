@@ -3,16 +3,19 @@
 .data
 sz_sysh_banner: .string "sysh version 0.0.0\n"
 
+.extern install_sighandlers
 .extern handle_input
 .extern bzeromem
 .extern cmpstr
 .extern erase_newline
 .extern erase_trailing_ws
 
+.global __main_l0_end
 .global main
 
 .text
 main:
+    call install_sighandlers
     sys_write_stdout $sz_sysh_banner, $19
 
     xorw %bx, %bx
@@ -21,35 +24,40 @@ main:
     setz %bl
     addb $0x23, %bl
 
-    subq $2048, %rsp
-    pushq %rbp
-    movq %rsp, %rbp
     pushw %bx
+    movq %rsp, %rbp
 
 __main_l0:
-    sys_write_stdout %rsp, $2
+    sys_write_stdout %rbp, $2
 
-    movq %rbp, %rdi
+    subq $2048, %rsp
+    
+    movq %rsp, %rdi
     movq $2048, %rsi
     call bzeromem
 
-    sys_read_stdin %rbp, $2048
+    sys_read_stdin %rsp, $2048
 
-    movq %rbp, %rdi
+    movq %rsp, %rdi
     call erase_newline
 
-    movq %rbp, %rdi
+    movq %rsp, %rdi
     call erase_trailing_ws
-    
-    movq %rbp, %rdi
+
+    movq %rsp, %rdi
+    call lenstr
+    testq %rax, %rax
+    jz __main_l0_end
+
+    movq %rsp, %rdi
     call handle_input
 
+__main_l0_end:
+    addq $2048, %rsp
     jmp __main_l0
 
 __main_finish:
     popw %bx
-    popq %rbp
-    addq $2048, %rsp
 
     xorl %eax, %eax
     ret

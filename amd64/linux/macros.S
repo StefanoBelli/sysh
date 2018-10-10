@@ -70,3 +70,19 @@
     movq \envp, %rdx
     syscall
 .endm
+
+.macro sys_rt_sigaction sig, sigaction_s
+    movq $13, %rax
+    movq \sig, %rdi
+    movq \sigaction_s, %rsi
+    xorq %rdx, %rdx
+    movq $8, %r10
+    syscall
+.endm
+
+.macro sys_kill pid, sig
+    movq $62, %rax
+    movq \pid, %rdi
+    movq \sig, %rsi
+    syscall
+.endm

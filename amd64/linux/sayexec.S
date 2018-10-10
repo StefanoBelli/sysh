@@ -5,7 +5,9 @@
 
 .data
 execve_failed: .asciz "execve failed\n"
+childproc_pid: .long 0
 
+.global childproc_pid
 .global sayexec
 .text
 sayexec:
@@ -14,9 +16,13 @@ sayexec:
     xchgq %r8, %r10
     testl %eax, %eax
     jz __sayexec_childproc
+    movq $childproc_pid, %rcx
+    movl %eax, (%rcx)
     xchgq %rax, %rbx
     sys_waitid %rbx
     
+    movq $childproc_pid, %rcx
+    movl $0, (%rcx)
     ret
 
 __sayexec_childproc:
