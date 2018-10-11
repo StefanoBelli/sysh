@@ -9,6 +9,7 @@
 .global handle_input
 .text
 handle_input:
+    xchgq %rdx, %r13
     movq $__builtins, %r9
     movq %rdi, %r8
 

@@ -15,6 +15,8 @@ sz_sysh_banner: .string "sysh version 0.1.0\n"
 
 .text
 main:
+    pushq %rdx
+
     movq $__INT_handler, %rsi
     movq $2, %rdi # SIGINT
     call install_sighandler
@@ -52,6 +54,7 @@ __main_l0:
     testq %rax, %rax
     jz __main_l0_end
 
+    movq 2(%rbp), %rdx
     movq %rsp, %rdi
     call handle_input
 
@@ -60,6 +63,7 @@ __main_l0_end:
 
 __main_finish:
     popw %bx
+    popq %rdx
     addq $2048, %rsp
     
     xorl %eax, %eax
