@@ -50,11 +50,12 @@
     syscall
 .endm
 
-.macro sys_waitid pid
+.macro sys_waitid pid, infop
     movq $247, %rax
     movq $1, %rdi
     movq \pid, %rsi
-    movq $4,%r10
+    movq $6,%r10
+    movq \infop, %rdx
     syscall
 .endm
 

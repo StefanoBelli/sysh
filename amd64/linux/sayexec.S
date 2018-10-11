@@ -6,6 +6,7 @@
 .data
 execve_failed: .asciz "execve failed\n"
 childproc_pid: .long 0
+segv_received: .asciz "sysh: segmentation fault\n"
 
 .global childproc_pid
 .global sayexec
@@ -19,8 +20,19 @@ sayexec:
     movq $childproc_pid, %rcx
     movl %eax, (%rcx)
     xchgq %rax, %rbx
-    sys_waitid %rbx
     
+    subq $128, %rsp
+    sys_waitid %rbx, %rsp
+    movl 24(%rsp), %eax # grazie riccardo per il suggerimento sull'offset
+    addq $128, %rsp
+
+    cmp $11, %eax
+    jne __sayexec_finish
+
+__sayexec_child_segv:
+    sys_write_stderr $segv_received, $25
+
+__sayexec_finish:
     movq $childproc_pid, %rcx
     movl $0, (%rcx)
     ret
@@ -68,11 +80,11 @@ __sayexec_childproc_finalize:
     
     testq %rax, %rax
     jnz __sayexec_childproc_execve_failed
-    jz __sayexec_finish
+    jz __sayexec_childproc_finish
 
 __sayexec_childproc_execve_failed:
     sys_write_stderr $execve_failed, $14
     sys_exit $2
 
-__sayexec_finish:
+__sayexec_childproc_finish:
 

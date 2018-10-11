@@ -1,20 +1,24 @@
 .include "macros.S"
 
 .data
-sz_sysh_banner: .string "sysh version 0.0.0\n"
+sz_sysh_banner: .string "sysh version 0.1.0\n"
 
-.extern install_sighandlers
+.extern install_sighandler
 .extern handle_input
 .extern bzeromem
 .extern cmpstr
 .extern erase_newline
 .extern erase_trailing_ws
+.extern __INT_handler
 
 .global main
 
 .text
 main:
-    call install_sighandlers
+    movq $__INT_handler, %rsi
+    movq $2, %rdi # SIGINT
+    call install_sighandler
+    
     sys_write_stdout $sz_sysh_banner, $19
 
     xorw %bx, %bx
@@ -57,6 +61,6 @@ __main_l0_end:
 __main_finish:
     popw %bx
     addq $2048, %rsp
-
+    
     xorl %eax, %eax
     ret
