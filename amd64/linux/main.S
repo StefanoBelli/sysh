@@ -10,7 +10,6 @@ sz_sysh_banner: .string "sysh version 0.0.0\n"
 .extern erase_newline
 .extern erase_trailing_ws
 
-.global __main_l0_end
 .global main
 
 .text
@@ -27,10 +26,10 @@ main:
     pushw %bx
     movq %rsp, %rbp
 
+    subq $2048, %rsp
+
 __main_l0:
     sys_write_stdout %rbp, $2
-
-    subq $2048, %rsp
     
     movq %rsp, %rdi
     movq $2048, %rsi
@@ -53,11 +52,11 @@ __main_l0:
     call handle_input
 
 __main_l0_end:
-    addq $2048, %rsp
     jmp __main_l0
 
 __main_finish:
     popw %bx
+    addq $2048, %rsp
 
     xorl %eax, %eax
     ret

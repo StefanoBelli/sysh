@@ -1,36 +1,32 @@
 .include "macros.S"
 
-.bss
-.lcomm __handler, 152
-
-.extern __main_l0_end
 .extern childproc_pid
 
 .global install_sighandlers
 .text
 install_sighandlers:
-    movq $748212304, %rax
-    xorq %rbx, %rax
+    subq $152, %rsp
 
-    movq $__handler, %rbx
+    movq $201326596, %rax # SA_ONSTACK | SA_SIGINFO | SA_RESTORER
 
-    movq $__restorer, 16(%rbx)
-    movq %rax, 8(%rbx)
-    movq $__INT_handler, (%rbx)
-    sys_rt_sigaction $2, $__handler
+    movq $__restorer, 16(%rsp)
+    movq %rax, 8(%rsp)
+    movq $__INT_handler, (%rsp)
+    
+    sys_rt_sigaction $2, %rsp
 
-    ret
+    addq $152, %rsp
+
+    retq
 
 __INT_handler:
+    retq # yeeee
     movq $childproc_pid, %rbx
     movl (%rbx), %eax
-     
-    testl %eax, %eax
-    jz __main_l0_end
     
     xchgq %rax, %rcx
     sys_kill %rcx, $2
 
-    jmp __main_l0_end
-
-__restorer:
+__restorer: 
+    movq $15, %rax
+    syscall
