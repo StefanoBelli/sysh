@@ -13,20 +13,24 @@ install_sighandlers:
     movq %rax, 8(%rsp)
     movq $__INT_handler, (%rsp)
     
-    sys_rt_sigaction $2, %rsp
+    sys_rt_sigaction $2, %rsp # SIGINT
 
     addq $152, %rsp
 
     retq
 
 __INT_handler:
-    retq # yeeee
     movq $childproc_pid, %rbx
     movl (%rbx), %eax
-    
+    testl %eax, %eax
+    jz __INT_handler_end
+
     xchgq %rax, %rcx
     sys_kill %rcx, $2
 
+__INT_handler_end:
+    retq
+    
 __restorer: 
     movq $15, %rax
     syscall
