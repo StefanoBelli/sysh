@@ -1,7 +1,7 @@
 .include "macros.S"
 
 .data
-sz_sysh_banner: .string "sysh version 0.1.0\n"
+sz_sysh_banner: .string "sysh version 0.1.1\n"
 
 .extern install_sighandler
 .extern handle_input
@@ -15,7 +15,7 @@ sz_sysh_banner: .string "sysh version 0.1.0\n"
 
 .text
 main:
-    pushq %rdx
+    pushq %rdx # preserve envp
 
     movq $__INT_handler, %rsi
     movq $2, %rdi # SIGINT

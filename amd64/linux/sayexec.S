@@ -76,9 +76,6 @@ __sayexec_childproc_finalize:
     pushq %r8
     leaq (%rsp), %r14
 
-    pushq %r13
-    leaq (%rsp), %r13
-
     sys_execve %r8, %r14, %r13
     
     testq %rax, %rax
