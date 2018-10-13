@@ -5,6 +5,7 @@
 .global split_ws
 .global erase_trailing_ws
 .global split_ws_reverse
+.global cpystr # !!!
 
 .text
 
@@ -63,6 +64,8 @@ __bzeromem_l0:
 #	size_t __rax__ lenstr(const char* __rdi__ buf)
 # returns: buf size in bytes
 # buf: buffer
+#
+# WARNING string length DOES NOT include NUL terminator
 lenstr:
     xorq %rcx, %rcx
 __lenstr_l0:
@@ -162,3 +165,27 @@ __split_ws_reverse_l0:
 __split_ws_finish:
     movq %rsi, %rax
     ret
+
+# function:
+# 	__nothing__ cpystr(const char* __rdi__ source, char* __rsi__ dest)
+# returns nothing
+# source: source buffer
+# dest: dest buffer
+# 
+# WARNING: USE WITH CAUTION TO AVOID BUFFER OVERFLOW!
+# "source" MUST BE NUL-TERMINATED (0, '\0')
+# NUL is copied to dest 
+cpystr:
+__cpystr_l0:
+    movb (%rdi), %al
+    movb %al, (%rsi)
+    
+    testb %al, %al
+    jz __cpystr_finish
+
+    addq $1, %rdi
+    addq $1, %rsi
+    jmp __cpystr_l0
+
+__cpystr_finish:
+    retq

@@ -1,7 +1,7 @@
 SHELL=/bin/sh
 AS=as
 LD=ld
-OBJS=signals.o strutil.o entry.o main.o handle_input.o builtins.o sayexec.o
+OBJS=signals.o strutil.o entry.o main.o handle_input.o builtins.o sayexec.o env.o
 OUT=sysh
 
 all:$(OBJS)
