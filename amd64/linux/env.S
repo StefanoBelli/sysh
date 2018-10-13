@@ -1,5 +1,6 @@
 .extern lenstr
 .extern cpystr
+.extern cmpstr
 
 .global sysh_getenv
 
