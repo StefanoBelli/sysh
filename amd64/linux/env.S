@@ -3,6 +3,7 @@
 .extern cmpstr
 
 .global sysh_getenv
+.global sysh_unsetenv
 
 .text
 # function:
@@ -75,4 +76,39 @@ __getenv_finish_value_found:
 
 __getenv_finish_value_not_found:
     xorq %rax, %rax
+    retq
+
+# function:
+# 	int __eax__ sysh_unsetenv(const char* __rdi__ lval, char** __rsi__ envp)
+# returns: 1 if variable deleted, 0 if not found
+# lval: the left value of the pair (aka the key of the pair, env var name)
+# envp: environmental variables array, the last address must be 0 (NULL, (void*) 0)
+sysh_unsetenv:
+    pushq %rsi
+
+    call sysh_getenv
+     
+    popq %rsi
+    
+    testq %rax, %rax
+    jz __unsetenv_finish
+
+    xorq %rax, %rax
+
+    movq (%rbx), %rsi
+    movq %rax, (%rsi)
+    
+    movq %rbx, %rsi
+__unsetenv_remove_pair_l0:
+    movq %rsi, %rdi
+    addq $8, %rsi
+    movq (%rsi), %rax
+    movq %rax, (%rdi)
+    
+    testq %rax, %rax
+    jnz __unsetenv_remove_pair_l0
+
+    movq $1, %rax
+
+__unsetenv_finish:
     retq
