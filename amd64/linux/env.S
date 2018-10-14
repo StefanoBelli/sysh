@@ -1,9 +1,12 @@
 .extern lenstr
 .extern cpystr
 .extern cmpstr
+.extern bzeromem
+.extern cpynmem
 
 .global sysh_getenv
 .global sysh_unsetenv
+.global sysh_setenv
 
 .text
 # function:
@@ -112,3 +115,60 @@ __unsetenv_remove_pair_l0:
 
 __unsetenv_finish:
     retq
+    
+# function:
+# 	int __eax__ sysh_setenv(const char* __rdi__ lval, const char* __rsi__ rval, char** __rdx__ envp)
+# returns: 1 if variable changed, 0 if not found or could not change (reasons listed below)
+# lval: the left value of the pair (aka the key of the pair, env var name)
+# rval: the right value of the pair (aka the value of the pair, env var value)
+# envp: environmental variables array, the last address must be 0 (NULL, (void*) 0)
+# 
+# sysh_setenv will NOT change a variable's value:
+# 	* if NEW rval is larger than the ACTUAL rval of the key
+# 	* if lval does not exist at all
+# reason:
+# 	yaaaa no memory allocator available :(
+sysh_setenv:
+    movq %rsi, %r10
+    movq %rdx, %r13
+
+    movq %rdx, %rsi
+    callq sysh_getenv
+
+    testq %rax, %rax
+    jz __setenv_finish
+
+    movq %rbx, %r14
+
+    movq %rax, %rdi
+    callq lenstr
+
+    movq %rax, %rdx
+
+    movq %r10, %rdi
+    callq lenstr
+    movq %rax, %r12
+    
+    xorq %rax, %rax
+
+    cmpq %rdx, %r12
+    ja __setenv_finish
+
+    movq (%r14), %rdi
+    callq lenstr
+    
+    addq $1, %rdi
+    subq %rdx, %rdi
+    movq %rdx, %rsi
+    
+    movq %rdi, %r14
+    callq bzeromem
+
+    movq %r10, %rdi
+    movq %r14, %rsi
+    movq %r12, %rdx
+    callq cpynmem
+    
+    movq $1, %rax
+__setenv_finish:
+    retq 

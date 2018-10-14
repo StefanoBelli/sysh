@@ -6,6 +6,7 @@
 .global erase_trailing_ws
 .global split_ws_reverse
 .global cpystr # !!!
+.global cpynmem
 
 .text
 
@@ -188,4 +189,27 @@ __cpystr_l0:
     jmp __cpystr_l0
 
 __cpystr_finish:
+    retq
+    
+# function:
+# 	__nothing__ cpynmem(const char* __rdi__ source, char* __rsi__ dest, size_t __rdx__ manyb)
+# returns nothing
+# source: source buffer
+# dest: dest buffer
+# manyb: how many bytes we should copy?
+cpynmem:
+    xchgq %rdx, %rcx
+
+__cpynmem_l0:
+    movb (%rdi), %al
+    movb %al, (%rsi)
+    
+    addq $1, %rdi
+    addq $1, %rsi
+    
+    subq $1, %rcx
+    testq %rcx, %rcx
+    jnz __cpynmem_l0
+
+__cpynmem_finish:
     retq
