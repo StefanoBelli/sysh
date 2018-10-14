@@ -1,7 +1,7 @@
 .include "macros.S"
 
 .data
-sz_sysh_banner: .string "sysh version 0.1.1\n"
+sz_sysh_banner: .string "sysh version 0.2.0\n"
 
 .extern install_sighandler
 .extern handle_input
