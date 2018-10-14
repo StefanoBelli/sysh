@@ -130,7 +130,6 @@ __unsetenv_finish:
 # 	yaaaa no memory allocator available :(
 sysh_setenv:
     movq %rsi, %r10
-    movq %rdx, %r13
 
     movq %rdx, %rsi
     callq sysh_getenv

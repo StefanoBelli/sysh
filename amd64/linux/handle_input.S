@@ -1,6 +1,7 @@
 .extern builtin_cd
 .extern builtin_cwd
 .extern builtin_exit
+.extern builtin_envctl
 .extern sayexec
 .extern cmpstr
 .extern lenstr
@@ -76,5 +77,8 @@ __builtins:
     .asciz "exit"
     .quad builtin_exit
 
+    .asciz "envctl"
+    .quad builtin_envctl
+    
     .quad 0
     .quad sayexec
