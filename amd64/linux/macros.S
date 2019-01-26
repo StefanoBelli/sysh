@@ -87,3 +87,8 @@
     movq \sig, %rsi
     syscall
 .endm
+
+.macro msysh_internal_setstatus code
+    movq $last_status_code_operation, %rax
+    movq \code, (%rax)
+.endm

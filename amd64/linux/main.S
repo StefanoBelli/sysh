@@ -1,7 +1,8 @@
 .include "macros.S"
 
 .data
-sz_sysh_banner: .string "sysh version 0.2.0\n"
+sz_sysh_banner: .string "sysh version 0.3.0\n"
+last_status_code_operation: .long 1
 
 .extern install_sighandler
 .extern handle_input
@@ -12,6 +13,7 @@ sz_sysh_banner: .string "sysh version 0.2.0\n"
 .extern __INT_handler
 
 .global main
+.global last_status_code_operation
 
 .text
 main:

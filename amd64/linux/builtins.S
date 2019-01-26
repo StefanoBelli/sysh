@@ -17,11 +17,13 @@ newline: .ascii "\n"
 .extern sysh_setenv
 .extern sysh_unsetenv
 .extern cmpstr
+.extern last_status_code_operation
 
 .global builtin_cd
 .global builtin_cwd
 .global builtin_exit
 .global builtin_envctl
+.global builtin_sysh_getstatus
 
 .text
 builtin_exit:
@@ -31,16 +33,20 @@ builtin_exit:
     sys_exit %rbx
 
 builtin_cd:
+    msysh_internal_setstatus $0
     testq %r11, %r11
     jnz __builtin_cd_chdir
     sys_write_stderr $not_enough_args, $30
+    msysh_internal_setstatus $1
     ret
 __builtin_cd_chdir:
     sys_chdir %r11
     testq %rax, %rax
     jz __builtin_cd_success
 __builtin_cd_fail:
+    msysh_internal_setstatus $2
     sys_write_stderr $could_not_chdir, $13
+    ret
 __builtin_cd_success:
     ret
 
@@ -123,18 +129,25 @@ __builtin_envctl_perform_request:
     jnz __builtin_envctl_finish
 
 __builtin_envctl_fail:
+    msysh_internal_setstatus $3
     sys_write_stderr $not_enough_args, $30
     retq
 
 __builtin_envctl_invalid_argument:
+    msysh_internal_setstatus $2
     sys_write_stderr $invalid_argument, $17
     retq
 
 __builtin_envctl_finish_fail:
+    msysh_internal_setstatus $1
     sys_write_stderr $envctl_failure, $15
     retq
 
 __builtin_envctl_finish:
+    pushq %rax
+    msysh_internal_setstatus $0
+    popq %rax
+
     movq $sysh_getenv, %rbx
     cmpq %rax, %rbx
     jne __builtin_envctl_finally_ret
@@ -147,3 +160,27 @@ __builtin_envctl_finish:
     sys_write_stdout $newline, $1
 __builtin_envctl_finally_ret:
     retq
+    
+builtin_sysh_getstatus:
+    pushq %rdi
+    pushq %rsi
+
+    subq $11, %rsp
+
+    movq %rsp, %rdi
+    movq $11, %rsi
+    call bzeromem
+
+    movq $last_status_code_operation, %rax
+    movq (%rax), %rdi
+    movq %rsp, %rsi
+    call unsigned_int32tos_buf
+
+    movq $0xa, 10(%rsp)
+    sys_write_stdout %rsp, $11
+
+    addq $11, %rsp
+
+    popq %rsi
+    popq %rdi
+    ret

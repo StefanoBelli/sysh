@@ -79,6 +79,9 @@ __builtins:
 
     .asciz "envctl"
     .quad builtin_envctl
-    
+
+    .asciz "sysh_getstatus"
+    .quad builtin_sysh_getstatus
+
     .quad 0
     .quad sayexec

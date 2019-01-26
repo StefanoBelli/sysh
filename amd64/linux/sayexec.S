@@ -2,6 +2,7 @@
 
 .extern lenstr
 .extern split_ws_reverse
+.extern sysh_execvp
 
 .data
 execve_failed: .asciz "execve failed\n"
@@ -31,6 +32,7 @@ sayexec:
 
 __sayexec_child_segv:
     sys_write_stderr $segv_received, $25
+    msysh_internal_setstatus $11
 
 __sayexec_finish:
     movq $childproc_pid, %rcx

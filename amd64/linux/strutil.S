@@ -9,6 +9,7 @@
 .global cpynmem
 .global find_sepc
 .global catnmem
+.global unsigned_int32tos_buf
 
 .text
 
@@ -266,3 +267,59 @@ __catnmem_find_source_end_loop0:
     call cpynmem
     ret
 
+# function:
+# 	__nothing__ unsigned_int32tos_buf(int32 __rdi__ data, char[10] __rsi__ buf)
+# returns nothing
+# data: what we have to represent
+# buf: where we want to put the representation, should be an array no larger than or less than 10 bytes
+unsigned_int32tos_buf:
+    xorl %edx, %edx
+    movl %edi, %eax
+    movl $10, %ebx
+    xorl %ecx, %ecx
+    
+__unsigned_int32tos_buf_loop0:
+    xorq %rdx, %rdx
+    divl %ebx
+    addb $48, %dl
+    pushq %rdx
+
+    addq $1, %rcx
+    cmpl $10, %eax
+    ja __unsigned_int32tos_buf_loop0
+
+    addb $48, %al
+    pushq %rax
+    addl $1, %ecx
+
+__unsigned_int32tos_buf_loop1:
+    popq %rax
+    movb %al, (%rsi)
+    addq $1, %rsi
+    subl $1, %ecx
+    jnz __unsigned_int32tos_buf_loop1
+
+    ret
+/*
+pow:
+    pushq %rcx
+
+    movl $1, %eax
+
+    testl %edi, %edi
+    jz __pow_finish
+
+    cmp $1, %edi
+    cmove %esi, %eax
+    je __pow_finish
+
+    movl %edi, %ecx
+__pow_loop0:
+    mull %esi
+    subl $1, %ecx
+    testl %ecx, %ecx
+    jnz __pow_loop0
+
+__pow_finish:
+    popq %rcx
+    ret*/
