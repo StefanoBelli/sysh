@@ -76,8 +76,13 @@ __sayexec_childproc_finalize:
     pushq %r8
     leaq (%rsp), %r14
 
-    sys_execve %r8, %r14, %r13
-    
+    #sys_execve %r8, %r14, %r13
+
+    movq %r8, %rdi
+    movq %r14, %rsi
+    movq %r13, %rdx
+    call sysh_execvp
+
     testq %rax, %rax
     jnz __sayexec_childproc_execve_failed
     jz __sayexec_childproc_finish

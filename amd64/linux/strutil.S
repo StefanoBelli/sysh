@@ -7,6 +7,8 @@
 .global split_ws_reverse
 .global cpystr # !!!
 .global cpynmem
+.global find_sepc
+.global catnmem
 
 .text
 
@@ -213,3 +215,54 @@ __cpynmem_l0:
 
 __cpynmem_finish:
     retq
+    
+# function:
+# 	char* __rax__ find_sepc(const char* __rdi__ source, char __rsi__ ch)
+# returns an address: where the separator 'ch' was found (from initial address 'source')
+# source: where I have to look
+# ch: what I have to look for in source
+find_sepc:
+    pushq %rbx
+    pushq %rcx
+    pushq %rdx
+
+    movq %rsi, %rcx # altered
+    xorq %rdx, %rdx # altered
+    movq %rdi, %rax
+__find_sepc_loop0:
+    movb (%rax), %bl
+
+    testb %bl, %bl
+    cmovz %rdx, %rax # if not found
+    jz __find_sepc_finish
+
+    cmpb %bl, %cl
+    je __find_sepc_finish
+
+    addq $1, %rax
+    jmp __find_sepc_loop0
+
+__find_sepc_finish:
+    popq %rdx
+    popq %rcx
+    popq %rbx
+    ret 
+
+# function:
+# 	__nothing__ catnmem(char* __rdi__ source, const char* __rsi__ what, size_t __rdx__ manyc)
+# returns nothing
+# source: where to append the string
+# what: what I should append
+# manyc: how many characeters is the string long?
+catnmem:
+__catnmem_find_source_end_loop0:
+    movb (%rdi), %al
+    addq $1, %rdi
+    testb %al, %al
+    jnz __catnmem_find_source_end_loop0
+    
+    subq $1, %rdi
+    xchgq %rdi, %rsi
+    call cpynmem
+    ret
+
