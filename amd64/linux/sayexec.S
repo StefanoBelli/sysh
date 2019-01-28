@@ -13,6 +13,8 @@ segv_received: .asciz "sysh: segmentation fault\n"
 .global sayexec
 .text
 sayexec:
+    msysh_internal_setstatus $0
+
     xchgq %r11, %rdx
     sys_fork
     xchgq %r8, %r10
@@ -24,10 +26,13 @@ sayexec:
     
     subq $128, %rsp
     sys_waitid %rbx, %rsp
-    movl 24(%rsp), %eax # grazie riccardo per il suggerimento sull'offset
+    movl 24(%rsp), %ebx # return value
+    msysh_internal_setstatus %rbx
+    movl 8(%rsp), %ebx # why it terminated
     addq $128, %rsp
 
-    cmp $11, %eax
+# check if it is segv
+    cmpl $3, %ebx
     jne __sayexec_finish
 
 __sayexec_child_segv:

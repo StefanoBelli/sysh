@@ -1,7 +1,7 @@
 .include "macros.S"
 
 .data
-sz_sysh_banner: .string "sysh version 0.3.0\n"
+sz_sysh_banner: .string "sysh version 0.3.1-emma\n"
 last_status_code_operation: .long 1
 
 .extern install_sighandler
@@ -23,7 +23,7 @@ main:
     movq $2, %rdi # SIGINT
     call install_sighandler
     
-    sys_write_stdout $sz_sysh_banner, $19
+    sys_write_stdout $sz_sysh_banner, $24
 
     xorw %bx, %bx
     movb $0x20, %bh
