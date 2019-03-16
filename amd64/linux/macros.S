@@ -92,3 +92,9 @@
     movq $last_status_code_operation, %rax
     movq \code, (%rax)
 .endm
+
+.macro sys_brk size
+    movq \size, %rdi
+    movq $12, %rax
+    syscall
+.endm
