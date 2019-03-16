@@ -1,7 +1,6 @@
 .include "macros.S"
 
 .global sysh_smalloc
-.global sysh_srealloc
 .global sysh_sfree
 
 .data
