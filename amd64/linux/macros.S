@@ -93,8 +93,13 @@
     movq \code, (%rax)
 .endm
 
-.macro sys_brk size
-    movq \size, %rdi
-    movq $12, %rax
+.macro sys_mmap addr, size, prot, flags, off, fd
+    movq \addr, %rdi
+    movq \size, %rsi
+    movq \prot, %rdx
+    movq \flags, %r10
+    movq \fd, %r8
+    movq \off, %r9
+    movq $9, %rax
     syscall
-.endm
+.endm 
