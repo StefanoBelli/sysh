@@ -35,7 +35,7 @@ _sysh_append_new_block:
 	movq %rdi, %rsi
 
 	addq $24, %rdi
-	callq sysh_sbrk
+	callq sysh_mmapit
 
 	testq %rax, %rax
 	jz __append_new_block_finish
@@ -65,17 +65,17 @@ __append_new_block_finish:
 
 #
 # __private__ function
-#		void* __rax__ sysh_sbrk(size_t __rdi__ brksize)
-# brksize: extend "brksize" bytes program break
+#		void* __rax__ sysh_mmapit(size_t __rdi__ bytes)
+# bytes: get "bytes" size anonymous memory mapping
 # returns: beginning of requested area
 #
-sysh_sbrk:
-	movq %rdi, %rsi
-
-	sys_brk $0
-
+sysh_mmapit:
 	addq %rsi, %rax
-	sys_brk %rax
+	sys_mmap $0, %rax, $3, $34, $0, $0
+	xorq %rsi, %rsi
+	movq $-1, %rdi
+	testq %rax, %rdi
+	cmove %rsi, %rax
 	retq
 
 #
@@ -195,7 +195,7 @@ sysh_srealloc:
 	movq %rsi, %rdi
 	movq %rcx, %r12
 	addq %rsi, %r12
-	callq sysh_sbrk
+	callq sysh_mmapit
 
 	testq %rax, %rax
 	jz __srealloc_finish
