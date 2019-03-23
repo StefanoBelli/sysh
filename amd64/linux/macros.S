@@ -103,3 +103,18 @@
     movq $9, %rax
     syscall
 .endm 
+
+.macro sys_prlimit64 pid, resource, new_rlim, old_rlim
+    movq $302, %rax
+    movq \pid, %rdi
+    movq \resource, %rsi
+    movq \new_rlim, %rdx
+    movq \old_rlim, %r10
+    syscall
+.endm
+
+.macro sys_close fd
+    movq \fd, %rdi
+    movq $3, %rax
+    syscall
+.endm

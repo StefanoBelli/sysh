@@ -1,4 +1,5 @@
 .include "macros.S"
+.include "proclimits.S"
 
 .extern lenstr
 .extern split_ws_reverse
@@ -83,7 +84,18 @@ __sayexec_childproc_finalize:
     pushq %r8
     leaq (%rsp), %r14
 
-    #sys_execve %r8, %r14, %r13
+    movq $PROC_LIMIT_NOFILE, %rdi
+    callq sysh_proclimit
+
+    movq %rax, %rcx
+__sayexec_childproc_closefds:
+    movq %rcx, %rsi
+    sys_close %rcx
+    movq %rsi, %rcx
+
+    subq $1, %rcx
+    cmpq $2, %rcx
+    ja __sayexec_childproc_closefds
 
     movq %r8, %rdi
     movq %r14, %rsi
