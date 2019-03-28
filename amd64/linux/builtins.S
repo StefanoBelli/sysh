@@ -24,6 +24,7 @@ newline: .ascii "\n"
 .global builtin_exit
 .global builtin_envctl
 .global builtin_sysh_getstatus
+.global builtin_envset
 
 .text
 builtin_exit:
@@ -184,3 +185,57 @@ builtin_sysh_getstatus:
     popq %rsi
     popq %rdi
     ret
+    
+builtin_envset:
+    movq %r11, %r8
+
+    movb $'=', %bl
+__builtin_envset_get_kvpair_sep:
+    movb (%r11), %al
+    addq $1, %r11
+    cmpb %bl, %al
+    jne __builtin_envset_get_kvpair_sep
+
+    movb $' ',%bl
+__builtin_envset_getvalue:
+    movb (%r11), %al
+    addq $1, %r11
+    cmpb %bl, %al
+    je __builtin_envset_getvalue
+
+    subq $1, %r11
+
+    movq %r11, %r12 #value
+    
+    movq %r8, %r11
+__builtin_envset_getkey:
+    movb (%r11), %al
+    addq $1, %r11
+    cmpb %bl, %al
+    je __builtin_envset_getkey
+
+    subq $1, %r11
+
+    movq %r11, %r8
+
+    movb $'=', %cl
+__builtin_envset_get_keyend:
+    movb (%r11), %al
+    addq $1, %r11
+    cmpb %cl, %al
+    je __builtin_envset_set_keyend
+    cmpb %bl, %al
+    jne __builtin_envset_get_keyend
+
+__builtin_envset_set_keyend:
+    subq $1, %r11
+    movb $0, (%r11)
+
+__builtin_envset_setenv:
+    movq %r8, %r11
+
+    movq %r13, %rdx
+    movq %r12, %rsi
+    movq %r11, %rdi
+    callq sysh_setenv
+    retq

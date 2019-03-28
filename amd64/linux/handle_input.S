@@ -83,5 +83,8 @@ __builtins:
     .asciz "sysh_getstatus"
     .quad builtin_sysh_getstatus
 
+    .asciz "%"
+    .quad builtin_envset
+
     .quad 0
     .quad sayexec
