@@ -7,6 +7,7 @@
 .global sysh_getenv
 .global sysh_unsetenv
 .global sysh_setenv
+.global sysh_envcount
 
 .text
 # function:
@@ -82,6 +83,22 @@ __getenv_finish_value_not_found:
     retq
 
 # function:
+# 	int __eax__ sysh_envcount(char** __rdi__ envp)
+# returns: number of set variables
+# envp: environmental variables array, the last address must be 0 (NULL, (void*)0)
+sysh_envcount:
+    xorl %eax, %eax
+__envcount_l0:
+    movq (%rdi), %rbx
+    addl $1, %eax
+    addq $8, %rdi
+    testq %rbx, %rbx
+    jnz __envcount_l0
+
+    subl $1, %eax
+    retq
+
+# function:
 # 	int __eax__ sysh_unsetenv(const char* __rdi__ lval, char** __rsi__ envp)
 # returns: 1 if variable deleted, 0 if not found
 # lval: the left value of the pair (aka the key of the pair, env var name)
@@ -90,11 +107,27 @@ sysh_unsetenv:
     pushq %rsi
 
     call sysh_getenv
-     
-    popq %rsi
     
     testq %rax, %rax
+    popq %rsi
     jz __unsetenv_finish
+
+    pushq %rbx
+    pushq %rax
+
+    movq %rax, %rdi
+    callq lenstr
+
+    popq %r11
+    movq %r11, %rdi
+    movq %rax, %rsi
+    callq bzeromem
+
+    popq %rbx
+    movq %r11, %rax
+    
+    movq %rax, %rdi
+    callq sysh_sfree
 
     xorq %rax, %rax
 
@@ -135,7 +168,7 @@ sysh_setenv:
     callq sysh_getenv
 
     testq %rax, %rax
-    jz __setenv_finish
+    jz __setenv_set_newkey
 
     movq %rbx, %r14
 
@@ -169,5 +202,6 @@ sysh_setenv:
     callq cpynmem
     
     movq $1, %rax
+__setenv_set_newkey:
 __setenv_finish:
     retq 

@@ -189,6 +189,34 @@ builtin_sysh_getstatus:
 builtin_envset:
     movq %r11, %r8
 
+    testq %r11, %r11
+    jnz __builtin_envset_proceed
+
+    movq %r13, %rdi
+    callq sysh_envcount
+
+    subq $10, %rsp
+
+    movq %rax, %r10
+
+    movq %rsp, %rdi
+    movq $10, %rsi
+    callq bzeromem
+
+    movq %r10, %rax
+
+    movq %rsp, %rsi
+    movq %rax, %rdi
+    callq unsigned_int32tos_buf
+
+    sys_write_stdout %rsp, $10
+    sys_write_stdout $newline, $1
+
+    addq $10, %rsp
+
+    retq
+    
+__builtin_envset_proceed:
     movb $'=', %bl
 __builtin_envset_get_kvpair_sep:
     movb (%r11), %al
