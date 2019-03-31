@@ -34,10 +34,13 @@ blocks_tail: .quad 0
 _sysh_append_new_block:
 	movq %rdi, %rsi
 
+	pushq %rsi
+
 	addq $24, %rdi
 	callq sysh_mmapit
 
 	testq %rax, %rax
+	popq %rsi
 	jz __append_new_block_finish
 
 	movq %rsi, (%rax) 	# block_header->DATA_SIZE
