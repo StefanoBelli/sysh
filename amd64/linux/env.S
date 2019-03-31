@@ -9,6 +9,9 @@
 .global sysh_setenv
 .global sysh_envcount
 
+.data
+equsym: .ascii "="
+
 .text
 # function:
 # 	char* __rax__ sysh_getenv(const char* __rdi__ lval, const char** __rsi__ envp)
@@ -156,4 +159,74 @@ __unsetenv_finish:
 # rval: the right value of the pair (aka the value of the pair, env var value)
 # envp: environmental variables array, the last address must be 0 (NULL, (void*) 0)
 sysh_setenv:
+    pushq %rdi
+    pushq %rsi
+    pushq %rdx
+
+    movq %rdx, %rsi
+    callq sysh_unsetenv
+
+    popq %rdx
+    movq %rdx, %rdi
+    callq sysh_envcount
+
+    movq %rdx, %r15
+
+    addq $2, %rax
+    movq %rax, %rsi
+    movq %rdx, %rdi
+    callq sysh_srealloc
+
+    popq %rdi
+    movq %rdi, %r10 # value
+    callq lenstr
+    movq %rax, %r13
+
+    popq %rdi
+    movq %rdi, %r11 # key
+    callq lenstr
+    movq %rax, %r12
+
+    addq $2, %rax
+    addq %r13, %rax
+
+    pushq %r10
+    pushq %r11
+
+    movq %rax, %rdi
+    callq sysh_smalloc
+
+    movq %rax, %r9
+
+    popq %rdi
+    movq %rax, %rsi
+    movq %r12, %rdx
+    callq cpynmem
+
+    movq $equsym, %rsi
+    movq %r9, %rdi
+    movq $1, %rdx
+    callq catnmem
+
+    popq %rsi
+    movq %r9, %rdi
+    movq %r13, %rdx
+    callq catnmem
+__setenv_find_avail_addr:
+    movq (%r15), %rbx
+    addq $8, %r15
+    testq %rbx, %rbx
+    jnz __setenv_find_avail_addr
+
+    subq $8, %r15
+    movq %r9, (%r15)
+    
+    addq $8, %r15
+    movq (%r15), %rax
+    testq %rax, %rax
+    jz __setenv_finish
+
+    xorq %rax, %rax
+    movq %rax, (%r15)
+__setenv_finish:
     retq

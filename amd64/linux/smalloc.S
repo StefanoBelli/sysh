@@ -19,6 +19,7 @@
 .global sysh_smalloc
 .global sysh_srealloc
 .global sysh_sfree
+.global _get_block_size
 
 .data
 blocks_head: .quad 0
@@ -261,3 +262,10 @@ __srealloc_get_new_block:
 __srealloc_finish:
 	retq
 
+
+_get_block_size:
+    subq $24, %rdi
+    movq (%rdi), %rax
+    addq $24, %rdi
+
+    retq
