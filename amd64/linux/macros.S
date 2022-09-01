@@ -1,3 +1,16 @@
+
+.macro __zero_reg ieq, ine, val, reg
+.if \val == $0
+	\ieq \reg, \reg
+.else
+	\ine \val, \reg
+.endif
+.endm
+
+.macro maybe_xorl val, reg
+	__zero_reg xorl movl \val \reg
+.endm
+
 .macro sys_getuid
     movq $102, %rax
     syscall
@@ -54,7 +67,7 @@
 	movq $61, %rax
 	movl \pid, %edi
 	leaq \stadr, %rsi
-	movl \opts, %edx
+	maybe_xorl \opts, %edx
 	leaq \ruadr, %r10
 	syscall
 .endm
