@@ -50,17 +50,6 @@
     syscall
 .endm
 
-/*
-.macro sys_waitid pid, infop
-    movq $247, %rax
-    movq $1, %rdi
-    movq \pid, %rsi
-    movq $6,%r10
-    movq \infop, %rdx
-    syscall
-.endm
-*/
-
 .macro sys_wait4 pid, stadr, opts, ruadr
 	movq $61, %rax
 	movl \pid, %edi
@@ -128,4 +117,9 @@
     movq \fd, %rdi
     movq $3, %rax
     syscall
+.endm
+
+.macro sys_rt_sigreturn
+	movq $15, %rax
+	syscall
 .endm

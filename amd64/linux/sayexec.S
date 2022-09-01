@@ -7,49 +7,24 @@
 
 .data
 execve_failed: .asciz "execve failed\n"
-childproc_pid: .long 0
-segv_received: .asciz "sysh: segmentation fault\n"
 
-.global childproc_pid
 .global sayexec
 .text
 sayexec:
-    msysh_internal_setstatus $0
-
     xchgq %r11, %rdx
     sys_fork
     xchgq %r8, %r10
+
     testl %eax, %eax
     jz __sayexec_childproc
-    movq $childproc_pid, %rcx
-    movl %eax, (%rcx)
+
     xchgq %rax, %rbx
 
     subq $148, %rsp
-
     sys_wait4 %ebx, (%rsp), $0, 4(%rsp)
-
     addq $148, %rsp
 
-    /*
-    subq $128, %rsp
-    sys_waitid %rbx, %rsp
-    movl 24(%rsp), %ebx # return value
-    msysh_internal_setstatus %rbx
-    movl 8(%rsp), %ebx # why it terminated
-    addq $128, %rsp
-
-# check if it is segv
-    cmpl $3, %ebx
-    jne __sayexec_finish
-
-__sayexec_child_segv:
-    sys_write_stderr $segv_received, $25
-    msysh_internal_setstatus $11
-    */
 __sayexec_finish:
-    movq $childproc_pid, %rcx
-    movl $0, (%rcx)
     ret
 
 __sayexec_childproc:

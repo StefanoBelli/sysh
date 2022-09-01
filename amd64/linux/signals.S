@@ -24,5 +24,4 @@ __INT_handler:
     retq
 
 __restorer: 
-    movq $15, %rax
-    syscall
+	sys_rt_sigreturn
