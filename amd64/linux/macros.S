@@ -50,6 +50,7 @@
     syscall
 .endm
 
+/*
 .macro sys_waitid pid, infop
     movq $247, %rax
     movq $1, %rdi
@@ -57,6 +58,16 @@
     movq $6,%r10
     movq \infop, %rdx
     syscall
+.endm
+*/
+
+.macro sys_wait4 pid, stadr, opts, ruadr
+	movq $61, %rax
+	movl \pid, %edi
+	leaq \stadr, %rsi
+	movl \opts, %edx
+	leaq \ruadr, %r10
+	syscall
 .endm
 
 .macro sys_fork
