@@ -1,7 +1,5 @@
 .include "macros.S"
 
-.extern childproc_pid
-
 .global __INT_handler
 .global install_sighandler
 
