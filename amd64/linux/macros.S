@@ -1,10 +1,13 @@
-
 .macro __zero_reg ieq, ine, val, reg
 .if \val == $0
 	\ieq \reg, \reg
 .else
 	\ine \val, \reg
 .endif
+.endm
+
+.macro maybe_xorq val, reg
+	__zero_reg xorq movq \val \reg
 .endm
 
 .macro maybe_xorl val, reg
@@ -18,7 +21,7 @@
 
 .macro sys_write fd, buf, len
     movq $1, %rax
-    movq \fd, %rdi
+    maybe_xorq \fd, %rdi
     movq \buf, %rsi
     movq \len, %rdx
     syscall
@@ -26,7 +29,7 @@
 
 .macro sys_read fd, buf, len
     movq $0, %rax
-    movq \fd, %rdi
+    maybe_xorq \fd, %rdi
     movq \buf, %rsi
     movq \len, %rdx
     syscall
@@ -59,7 +62,7 @@
 
 .macro sys_exit code
     movq $60, %rax
-    movq \code, %rdi
+    maybe_xorq \code, %rdi
     syscall
 .endm
 
@@ -80,14 +83,14 @@
 .macro sys_execve filename, argv, envp
     movq $59, %rax
     movq \filename, %rdi
-    movq \argv, %rsi
-    movq \envp, %rdx
+    maybe_xorq \argv, %rsi
+    maybe_xorq \envp, %rdx
     syscall
 .endm
 
 .macro sys_rt_sigaction sig, sigaction_s
     movq $13, %rax
-    movq \sig, %rdi
+    maybe_xorq \sig, %rdi
     movq \sigaction_s, %rsi
     xorq %rdx, %rdx
     movq $8, %r10
@@ -97,7 +100,7 @@
 .macro sys_kill pid, sig
     movq $62, %rax
     movq \pid, %rdi
-    movq \sig, %rsi
+    maybe_xorq \sig, %rsi
     syscall
 .endm
 
@@ -107,12 +110,12 @@
 .endm
 
 .macro sys_mmap addr, size, prot, flags, off, fd
-    movq \addr, %rdi
+    maybe_xorq \addr, %rdi
     movq \size, %rsi
-    movq \prot, %rdx
-    movq \flags, %r10
-    movq \fd, %r8
-    movq \off, %r9
+    maybe_xorq \prot, %rdx
+    maybe_xorq \flags, %r10
+    maybe_xorq \fd, %r8
+    maybe_xorq \off, %r9
     movq $9, %rax
     syscall
 .endm 
@@ -120,14 +123,14 @@
 .macro sys_prlimit64 pid, resource, new_rlim, old_rlim
     movq $302, %rax
     movq \pid, %rdi
-    movq \resource, %rsi
-    movq \new_rlim, %rdx
-    movq \old_rlim, %r10
+    maybe_xorq \resource, %rsi
+    maybe_xorq \new_rlim, %rdx
+    maybe_xorq \old_rlim, %r10
     syscall
 .endm
 
 .macro sys_close fd
-    movq \fd, %rdi
+    maybe_xorq \fd, %rdi
     movq $3, %rax
     syscall
 .endm
