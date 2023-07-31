@@ -38,7 +38,8 @@ sayexec_handle_childstatus:
 	movq $0xdeadbeefdeadbeef, %rdi
 	jne __sayexec_handle_childstatus_failure
 	# use esi directly
-	andl $0x7f, %esi
+	andl $0xff00, %esi
+	shrl $8, %esi
 	# esi has stop signo
 
 	jmp __sayexec_handle_childstatus_finish
