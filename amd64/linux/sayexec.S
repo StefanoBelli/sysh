@@ -7,9 +7,69 @@
 
 .data
 execve_failed: .asciz "execve failed\n"
+wait4_failed: .asciz "wait4 failed\n"
 
 .global sayexec
 .text
+sayexec_handle_childstatus:
+	pushq %rsi
+
+	movl %edi, %esi
+
+# WIFEXITED
+	andl $0x7f, %edi
+	testl %edi, %edi
+	movl %esi, %edi
+	jz __sayexec_handle_childstatus_exited
+
+# WIFSIGNALED
+	xchgl %eax, %edi
+	andb $0x7f, %al
+	addb $1, %al
+	sarb $1, %al
+	cmpb $0, %al
+	xchgl %edi, %eax 
+	movl %esi, %edi
+	jg __sayexec_handle_childstatus_signaled
+
+# WIFSTOPPED
+	andl $0xff, %edi
+	cmpl $0x7f, %edi
+	movq $0xdeadbeefdeadbeef, %rdi
+	jne __sayexec_handle_childstatus_failure
+	# use esi directly
+	andl $0x7f, %esi
+	# esi has stop signo
+
+	jmp __sayexec_handle_childstatus_finish
+
+__sayexec_handle_childstatus_exited:
+	andl $0xff00, %edi
+	shrl $8, %edi
+	# edi has child exit code
+
+	jmp __sayexec_handle_childstatus_finish
+
+__sayexec_handle_childstatus_signaled:
+	andl $0x80, %edi
+	testl %edi, %edi
+	movl %esi, %edi
+	jnz __sayexec_handle_childstatus_coredumped
+	andl $0x7f, %edi
+	# edi has signo that terminated child
+
+	jmp __sayexec_handle_childstatus_finish
+
+__sayexec_handle_childstatus_coredumped:
+	andl $0x7f, %edi
+	# edi has signo that terminated child + trig coredump
+
+__sayexec_handle_childstatus_finish:
+	xorq %rdi, %rdi
+__sayexec_handle_childstatus_failure:
+	popq %rsi
+	retq
+
 sayexec:
     xchgq %r11, %rdx
     sys_fork
@@ -21,8 +81,15 @@ sayexec:
     xchgq %rax, %rbx
 
     subq $148, %rsp
-    sys_wait4 %ebx, (%rsp), $0, 4(%rsp)
+    sys_wait4 %ebx, (%rsp), $2, 4(%rsp) # WUNTRACED
+    pushq %rdi
+    movl 8(%rsp), %edi
     addq $148, %rsp
+    callq sayexec_handle_childstatus
+    testq %rdi, %rdi
+    popq %rdi
+    jz __sayexec_finish
+    sys_write_stderr $wait4_failed, $13
 
 __sayexec_finish:
     ret
