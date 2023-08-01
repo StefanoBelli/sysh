@@ -2,7 +2,7 @@
 
 .data
 sz_sysh_banner: .string "sysh version 0.3.9-emma\n"
-last_status_code_operation: .long 1
+last_status_code_operation: .quad 1
 
 .extern install_sighandler
 .extern handle_input

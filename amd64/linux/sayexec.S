@@ -7,24 +7,23 @@
 
 .data
 execve_failed: .asciz "execve failed\n"
-wait4_failed: .asciz "wait4 failed\n"
+stopped: .asciz "stopped\n"
+signaled: .asciz "signaled\n"
+coredumped: .asciz "coredumped\n"
+wait4_unknown: .asciz "wait4 unknown\n"
 
 .global sayexec
 .text
 sayexec_handle_childstatus:
-	pushq %rsi
-
 	movl %edi, %esi
 
 # WIFEXITED
 	andl $0x7f, %edi
 	testl %edi, %edi
-	movl %esi, %edi
 	jz __sayexec_handle_childstatus_exited
 
 # WIFSIGNALED
 	xchgl %eax, %edi
-	andb $0x7f, %al
 	addb $1, %al
 	sarb $1, %al
 	cmpb $0, %al
@@ -37,38 +36,59 @@ sayexec_handle_childstatus:
 	cmpl $0x7f, %edi
 	movq $0xdeadbeefdeadbeef, %rdi
 	jne __sayexec_handle_childstatus_failure
-	# use esi directly
 	andl $0xff00, %esi
 	shrl $8, %esi
 	# esi has stop signo
+	movq $4, %rcx
+	shlq $32, %rcx
+	orq %rsi, %rcx
+	msysh_internal_setstatus %rcx
+
+	sys_write_stderr $stopped, $8
 
 	jmp __sayexec_handle_childstatus_finish
 
 __sayexec_handle_childstatus_exited:
-	andl $0xff00, %edi
-	shrl $8, %edi
-	# edi has child exit code
+	andl $0xff00, %esi
+	shrl $8, %esi
+	# esi has child exit code
+	xorq %rcx, %rcx
+	orq %rsi, %rcx
+	msysh_internal_setstatus %rcx
 
 	jmp __sayexec_handle_childstatus_finish
 
 __sayexec_handle_childstatus_signaled:
 	andl $0x80, %edi
 	testl %edi, %edi
-	movl %esi, %edi
 	jnz __sayexec_handle_childstatus_coredumped
-	andl $0x7f, %edi
-	# edi has signo that terminated child
+	andl $0x7f, %esi
+	# esi has signo that terminated child
+	movq $1, %rcx
+	shlq $32, %rcx
+	orq %rsi, %rcx
+	msysh_internal_setstatus %rcx
+
+	cmpl $2, %esi
+	je __sayexec_handle_childstatus_finish
+
+	sys_write_stderr $signaled, $9
 
 	jmp __sayexec_handle_childstatus_finish
 
 __sayexec_handle_childstatus_coredumped:
-	andl $0x7f, %edi
-	# edi has signo that terminated child + trig coredump
+	andl $0x7f, %esi
+	# esi has signo that terminated child + trig coredump
+	movq $3, %rcx
+	shlq $32, %rcx
+	orq %rsi, %rcx
+	msysh_internal_setstatus %rcx
+
+	sys_write_stderr $coredumped, $11
 
 __sayexec_handle_childstatus_finish:
 	xorq %rdi, %rdi
 __sayexec_handle_childstatus_failure:
-	popq %rsi
 	retq
 
 sayexec:
@@ -83,15 +103,17 @@ sayexec:
 
     subq $148, %rsp
     sys_wait4 %ebx, (%rsp), $2, 4(%rsp) # WUNTRACED
-    pushq %rdi
-    movl 8(%rsp), %edi
+    movl (%rsp), %edi
     addq $148, %rsp
     callq sayexec_handle_childstatus
     testq %rdi, %rdi
-    popq %rdi
     jz __sayexec_finish
-    sys_write_stderr $wait4_failed, $13
 
+    sys_write_stderr $wait4_unknown, $14
+
+    movq $7, %rcx
+    shlq $32, %rcx
+    msysh_internal_setstatus %rcx
 __sayexec_finish:
     ret
 

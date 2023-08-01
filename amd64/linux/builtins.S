@@ -168,6 +168,21 @@ builtin_sysh_getstatus:
 
     subq $11, %rsp
 
+# higher 32 bits
+    movq %rsp, %rdi
+    movq $11, %rsi
+    call bzeromem
+
+    movq $last_status_code_operation, %rax
+    movq (%rax), %rdi
+    shrq $32, %rdi
+    movq %rsp, %rsi
+    call unsigned_int32tos_buf
+
+    movq $0xa, 10(%rsp)
+    sys_write_stdout %rsp, $11
+
+# lower 32 bits
     movq %rsp, %rdi
     movq $11, %rsi
     call bzeromem
@@ -179,6 +194,8 @@ builtin_sysh_getstatus:
 
     movq $0xa, 10(%rsp)
     sys_write_stdout %rsp, $11
+
+# end
 
     addq $11, %rsp
 
