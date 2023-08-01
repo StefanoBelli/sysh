@@ -84,11 +84,10 @@ unused     ^^^^ ^^^^ ^^^^ rescode
 
 #### notes
 
-calling sysh_getstatus won't affect status code
+calling sysh_getstatus won't affect status code.
 
-status code will be changed whenever sysh code calls (better saying
-"expands") ```msysh_internal_setstatus```
+status code will not be changed until ```msysh_internal_setstatus``` is expanded (some move instrs). T
 
-is MS32b is zero, it is user responsibility to remember if the last operation
+if MS32b is zero, it is user responsibility to remember if the last operation
 who might have affected the status code was sysh builtin code or a child
 process' exit code
