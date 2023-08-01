@@ -63,24 +63,24 @@ unused     ^^^^ ^^^^ ^^^^ rescode
 #### cases
 
  * A builtin set status variable
-  - MS32b is zeroed 
-  - LS32b is set to builtin result code
+   * MS32b is zeroed 
+   * LS32b is set to builtin result code
  * Child process status changed and ```sayexec_handle_childstatus``` has set status variable
-  - EXITED (e.g. child process called exit()) 
-   - MS32b is zeroed 
-   - LS32b is set to process exit code 
-  - SIGNALED (e.g. CTRL+C, SIGINT) 
-   - MS32b is 1 
-   - LS32b is set to signo that terminated child 
-  - COREDUMPED (e.g. SIGABRT is delivered to child)
-   - MS32b is 3 
-   - LS32b is set to signo that terminated child and caused process to dump core 
-  - STOPPED (e.g. SIGSTOP, SIGTSTP is delivered to child) 
-   - MS32b is 4 
-   - LS32b is set to signo that stopped child 
-  - WAIT4UNKNOWN (wait4 status cannot be "decoded") 
-   - MS32b is 7 
-   - LS32b is undefined
+   * EXITED (e.g. child process called exit()) 
+     * MS32b is zeroed 
+     * LS32b is set to process exit code 
+   * SIGNALED (e.g. CTRL+C, SIGINT) 
+     * MS32b is 1 
+     * LS32b is set to signo that terminated child 
+   * COREDUMPED (e.g. SIGABRT is delivered to child)
+     * MS32b is 3 
+     * LS32b is set to signo that terminated child and caused process to dump core 
+   * STOPPED (e.g. SIGSTOP, SIGTSTP is delivered to child) 
+     * MS32b is 4 
+     * LS32b is set to signo that stopped child 
+   * WAIT4UNKNOWN (wait4 status cannot be "decoded") 
+     * MS32b is 7 
+     * LS32b is undefined
 
 #### notes
 
