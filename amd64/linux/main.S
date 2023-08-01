@@ -1,8 +1,8 @@
 .include "macros.S"
 
 .data
-sz_sysh_banner: .string "sysh version 0.3.9-emma\n"
-last_status_code_operation: .quad 1
+sz_sysh_banner: .string "sysh version 0.3.10\n"
+last_status_code_operation: .quad 0
 
 .extern install_sighandler
 .extern handle_input

@@ -15,6 +15,7 @@ wait4_unknown: .asciz "wait4 unknown\n"
 .global sayexec
 .text
 sayexec_handle_childstatus:
+	xorq %rsi, %rsi
 	movl %edi, %esi
 
 # WIFEXITED
