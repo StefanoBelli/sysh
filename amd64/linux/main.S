@@ -10,20 +10,33 @@ last_status_code_operation: .quad 0
 .extern cmpstr
 .extern erase_newline
 .extern erase_trailing_ws
-.extern __INT_handler
 
 .global main
 .global last_status_code_operation
 
 .text
+
+__INT_handler:
+__STOP_handler:
+__TSTP_handler:
+	retq
+
 main:
     pushq %rdx # preserve envp
 
     movq $__INT_handler, %rsi
     movq $2, %rdi # SIGINT
-    call install_sighandler
-    
-    sys_write_stdout $sz_sysh_banner, $24
+    callq install_sighandler
+
+    movq $__STOP_handler, %rsi
+    movq $19, %rdi # SIGSTOP
+    callq install_sighandler
+
+    movq $__TSTP_handler, %rsi
+    movq $20, %rdi #SIGTSTP
+    callq install_sighandler
+
+    sys_write_stdout $sz_sysh_banner, $20
 
     xorw %bx, %bx
     movb $0x20, %bh

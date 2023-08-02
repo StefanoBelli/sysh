@@ -1,6 +1,5 @@
 .include "macros.S"
 
-.global __INT_handler
 .global install_sighandler
 
 .text
@@ -16,9 +15,6 @@ install_sighandler:
     sys_rt_sigaction %rdi, %rsp
     addq $152, %rsp
 
-    retq
-
-__INT_handler:
     retq
 
 __restorer: 
